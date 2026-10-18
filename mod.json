@@ -3,15 +3,19 @@
   "gd": { "win": "2.2081" },
   "id": "yourname.gd-optimizer",
   "name": "GD Optimizer",
-  "version": "v1.0.0",
+  "version": "v1.1.0",
   "developer": "yourname",
-  "description": "Optimiza el rendimiento sin cambiar la calidad gráfica.",
+  "description": "Optimiza el rendimiento (CPU/memoria) sin cambiar la calidad gráfica.",
   "tags": ["performance", "utility"],
   "settings": {
+    "title-fps": {
+      "type": "title",
+      "name": "Límite de FPS (no afecta a los gráficos)"
+    },
     "pause-limit-enabled": {
       "type": "bool",
       "name": "Limitar FPS en pausa",
-      "description": "Baja los FPS mientras el menú de pausa está abierto. Ahorra CPU/GPU sin afectar los gráficos.",
+      "description": "Baja los FPS mientras el menú de pausa está abierto.",
       "default": true
     },
     "pause-fps": {
@@ -19,12 +23,25 @@
       "name": "FPS en pausa",
       "default": 30,
       "min": 5,
-      "max": 120
+      "max": 240
+    },
+    "menu-limit-enabled": {
+      "type": "bool",
+      "name": "Limitar FPS en menús",
+      "description": "Limita los FPS fuera de los niveles y del editor (menús, garaje, buscador). Nunca se aplica en la pantalla de carga.",
+      "default": true
+    },
+    "menu-fps": {
+      "type": "int",
+      "name": "FPS en menús",
+      "default": 60,
+      "min": 15,
+      "max": 240
     },
     "bg-limit-enabled": {
       "type": "bool",
       "name": "Limitar FPS sin foco",
-      "description": "Baja los FPS cuando la ventana del juego no está en primer plano o está minimizada.",
+      "description": "Baja los FPS cuando la ventana no está en primer plano o está minimizada.",
       "default": true
     },
     "bg-fps": {
@@ -32,13 +49,34 @@
       "name": "FPS sin foco",
       "default": 15,
       "min": 1,
-      "max": 120
+      "max": 240
+    },
+    "title-memory": {
+      "type": "title",
+      "name": "Memoria"
     },
     "trim-textures": {
       "type": "bool",
-      "name": "Liberar texturas sin uso al salir del nivel",
-      "description": "Libera de la memoria solo las texturas que nadie está usando. No afecta lo que se ve en pantalla.",
-      "default": true
+      "name": "Liberar texturas sin uso al salir del nivel (experimental)",
+      "description": "Libera solo texturas que nadie referencia. Desactivado por defecto: actívalo solo si te sobra RAM que recuperar y lo has probado.",
+      "default": false
+    },
+    "title-diag": {
+      "type": "title",
+      "name": "Diagnóstico"
+    },
+    "log-spikes": {
+      "type": "bool",
+      "name": "Registrar picos de frame en el log",
+      "description": "Escribe en el log de Geode cuando un frame tarda más del umbral. Sirve para localizar la causa real de los stutters.",
+      "default": false
+    },
+    "spike-ms": {
+      "type": "int",
+      "name": "Umbral de pico (ms)",
+      "default": 50,
+      "min": 10,
+      "max": 1000
     }
   }
 }

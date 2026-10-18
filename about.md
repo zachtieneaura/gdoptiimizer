@@ -2,8 +2,8 @@
 
 Optimiza Geometry Dash **sin cambiar la calidad gráfica**.
 
-- Limita los FPS mientras el menú de pausa está abierto.
-- Limita los FPS cuando la ventana no tiene foco o está minimizada.
-- Libera de memoria solo las texturas sin uso al salir de un nivel.
+- Limita los FPS en pausa, en menús y con la ventana sin foco.
+- Opción (experimental) para liberar texturas sin uso al salir de un nivel.
+- Registro de picos de frame para encontrar la causa de los stutters.
 
-Todo se puede activar/desactivar y ajustar en los ajustes del mod.
+Todo se activa o ajusta en los ajustes del mod.
