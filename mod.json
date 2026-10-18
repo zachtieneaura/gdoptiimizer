@@ -1,0 +1,44 @@
+{
+  "geode": "4.0.0",
+  "gd": { "win": "2.2081" },
+  "id": "yourname.gd-optimizer",
+  "name": "GD Optimizer",
+  "version": "v1.0.0",
+  "developer": "yourname",
+  "description": "Optimiza el rendimiento sin cambiar la calidad gráfica.",
+  "tags": ["performance", "utility"],
+  "settings": {
+    "pause-limit-enabled": {
+      "type": "bool",
+      "name": "Limitar FPS en pausa",
+      "description": "Baja los FPS mientras el menú de pausa está abierto. Ahorra CPU/GPU sin afectar los gráficos.",
+      "default": true
+    },
+    "pause-fps": {
+      "type": "int",
+      "name": "FPS en pausa",
+      "default": 30,
+      "min": 5,
+      "max": 120
+    },
+    "bg-limit-enabled": {
+      "type": "bool",
+      "name": "Limitar FPS sin foco",
+      "description": "Baja los FPS cuando la ventana del juego no está en primer plano o está minimizada.",
+      "default": true
+    },
+    "bg-fps": {
+      "type": "int",
+      "name": "FPS sin foco",
+      "default": 15,
+      "min": 1,
+      "max": 120
+    },
+    "trim-textures": {
+      "type": "bool",
+      "name": "Liberar texturas sin uso al salir del nivel",
+      "description": "Libera de la memoria solo las texturas que nadie está usando. No afecta lo que se ve en pantalla.",
+      "default": true
+    }
+  }
+}
