@@ -1,9 +1,12 @@
 # GD Optimizer
 
-Optimiza Geometry Dash **sin cambiar la calidad gráfica**.
+By **Zachbtw**.
 
-- Limita los FPS en pausa, en menús y con la ventana sin foco.
-- Opción (experimental) para liberar texturas sin uso al salir de un nivel.
-- Registro de picos de frame para encontrar la causa de los stutters.
+Optimiza Geometry Dash **sin cambiar la calidad gráfica** y sin tocar la
+lógica de juego, la física ni los triggers.
 
-Todo se activa o ajusta en los ajustes del mod.
+- Límite de FPS en pausa, menús y con la ventana sin foco.
+- Liberación opcional de texturas sin uso al salir de un nivel.
+- Profiler de render: FPS, batches, quads y peor frame en el log.
+
+Todo es modular y se configura en los ajustes del mod.

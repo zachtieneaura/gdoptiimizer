@@ -1,21 +1,26 @@
 {
   "geode": "5.10.1",
   "gd": { "win": "2.2081" },
-  "id": "yourname.gd-optimizer",
+  "id": "zachbtw.gd-optimizer",
   "name": "GD Optimizer",
-  "version": "v1.1.0",
-  "developer": "yourname",
-  "description": "Optimiza el rendimiento (CPU/memoria) sin cambiar la calidad gráfica.",
+  "version": "v2.0.0",
+  "developer": "Zachbtw",
+  "description": "Optimización modular de rendimiento sin cambiar la calidad gráfica.",
   "tags": ["performance", "utility"],
   "settings": {
     "title-fps": {
       "type": "title",
-      "name": "Límite de FPS (no afecta a los gráficos)"
+      "name": "Límite de FPS (solo fuera de la partida)"
+    },
+    "fps-limiter-enabled": {
+      "type": "bool",
+      "name": "Activar módulo de límite de FPS",
+      "description": "Interruptor general del módulo. Nunca actúa dentro de un nivel ni del editor.",
+      "default": true
     },
     "pause-limit-enabled": {
       "type": "bool",
       "name": "Limitar FPS en pausa",
-      "description": "Baja los FPS mientras el menú de pausa está abierto.",
       "default": true
     },
     "pause-fps": {
@@ -28,7 +33,7 @@
     "menu-limit-enabled": {
       "type": "bool",
       "name": "Limitar FPS en menús",
-      "description": "Limita los FPS fuera de los niveles y del editor (menús, garaje, buscador). Nunca se aplica en la pantalla de carga.",
+      "description": "Menús, garaje, buscador... Nunca en la pantalla de carga.",
       "default": true
     },
     "menu-fps": {
@@ -41,7 +46,7 @@
     "bg-limit-enabled": {
       "type": "bool",
       "name": "Limitar FPS sin foco",
-      "description": "Baja los FPS cuando la ventana no está en primer plano o está minimizada.",
+      "description": "Cuando la ventana no está en primer plano o está minimizada.",
       "default": true
     },
     "bg-fps": {
@@ -58,25 +63,25 @@
     "trim-textures": {
       "type": "bool",
       "name": "Liberar texturas sin uso al salir del nivel (experimental)",
-      "description": "Libera solo texturas que nadie referencia. Desactivado por defecto: actívalo solo si te sobra RAM que recuperar y lo has probado.",
+      "description": "Libera solo texturas que nadie referencia. Desactivado por defecto.",
       "default": false
     },
-    "title-diag": {
+    "title-profiler": {
       "type": "title",
-      "name": "Diagnóstico"
+      "name": "Profiler (solo mide, no cambia nada)"
     },
-    "log-spikes": {
+    "profiler-enabled": {
       "type": "bool",
-      "name": "Registrar picos de frame en el log",
-      "description": "Escribe en el log de Geode cuando un frame tarda más del umbral. Sirve para localizar la causa real de los stutters.",
+      "name": "Activar profiler de render",
+      "description": "Escribe en el log de Geode: FPS, batches y quads por frame, tiempo de frame y peor frame.",
       "default": false
     },
-    "spike-ms": {
+    "profiler-interval": {
       "type": "int",
-      "name": "Umbral de pico (ms)",
-      "default": 50,
-      "min": 10,
-      "max": 1000
+      "name": "Intervalo del informe (s)",
+      "default": 2,
+      "min": 1,
+      "max": 30
     }
   }
 }
