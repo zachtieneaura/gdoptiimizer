@@ -6,6 +6,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(GDOptimizer VERSION 1.0.0)
 
+# Workaround: fmt 11.0.2 falla con Clang 20+ (consteval)
+add_compile_definitions(FMT_USE_CONSTEVAL=0)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
