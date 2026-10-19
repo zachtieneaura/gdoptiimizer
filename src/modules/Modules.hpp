@@ -7,5 +7,6 @@ namespace opt {
 std::unique_ptr<Module> makeFpsLimiter();
 std::unique_ptr<Module> makeTextureTrim();
 std::unique_ptr<Module> makeFrameProfiler();
+std::unique_ptr<Module> makeGpuProbe();
 
 } // namespace opt

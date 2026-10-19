@@ -3,7 +3,7 @@
   "gd": { "win": "2.2081" },
   "id": "zachbtw.gd-optimizer",
   "name": "GD Optimizer",
-  "version": "v2.0.0",
+  "version": "v2.1.0",
   "developer": "Zachbtw",
   "description": "Optimización modular de rendimiento sin cambiar la calidad gráfica.",
   "tags": ["performance", "utility"],
@@ -82,6 +82,16 @@
       "default": 2,
       "min": 1,
       "max": 30
+    },
+    "title-gpu": {
+      "type": "title",
+      "name": "Diagnóstico de GPU (solo lee)"
+    },
+    "gpu-probe-enabled": {
+      "type": "bool",
+      "name": "Informar de las capacidades de la GPU en el log",
+      "description": "Escribe en el log la versión de OpenGL y si hay compute shaders, draw indirect e instancing. No crea recursos ni cambia el render.",
+      "default": false
     }
   }
 }

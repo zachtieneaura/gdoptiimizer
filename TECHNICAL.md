@@ -1,60 +1,88 @@
-# GD Optimizer v2 — notas técnicas
+# GD Optimizer v2.1 — análisis técnico
 
-## Arquitectura
-- `main.cpp`: crea un núcleo que reparte un tick (4 veces/s) a los módulos.
-- `core/Module.hpp`: interfaz `Module` + `Registry`.
-- `core/Config.hpp`: acceso a los ajustes de `mod.json`.
-- `modules/*.cpp`: un archivo por optimización. Cada una tiene su interruptor.
-- Regla de diseño: **nada de trabajo por frame salvo hooks mínimos**. Lo demás
-  corre en el tick, no en el bucle de render.
+Documento de diseño y viabilidad. Explica cada sistema pedido: cómo
+funcionaría, cómo interactúa con CPU, memoria y GPU, y por qué se incluye o no.
 
-## Módulos implementados
+## Contexto técnico
+- GD 2.2081 usa una versión modificada de cocos2d-x 2.x con OpenGL. El contexto
+  lo crea GLFW y su versión depende de la máquina (no se puede asumir 4.3).
+- Los objetos del nivel son nodos `CCSprite` agrupados en `CCSpriteBatchNode`:
+  cada batch es un draw call con los quads de muchos sprites de la misma textura.
+- Cada frame, la CPU: ejecuta la lógica (triggers, movimiento, colisiones),
+  actualiza transformaciones de sprites y recorre el árbol de nodos (`visit`).
+  La GPU: dibuja los batches, con mezcla (blending) y glow.
+- Por eso el módulo `GpuProbe` y el `FrameProfiler` existen: antes de diseñar,
+  hay que saber si el cuello de botella es CPU o GPU en TU máquina y TUS niveles.
 
-### FpsLimiter
-Baja el intervalo de animación de `CCDirector` solo en pausa, menús y ventana
-sin foco. Un frame en pausa/menú no cambia nada en pantalla pero gasta CPU
-(visit de la escena, actualización de nodos) y GPU (redibujado). No actúa nunca
-en un nivel ni en el editor, ni en la pantalla de carga (carga un paso por
-frame). Nunca sube los FPS por encima del valor del juego u otro mod.
+## 1. Culling con compute shaders
+**Diseño teórico:** un SSBO con la caja (AABB) de cada objeto; un compute
+shader (grupos de 64 hilos) compara cada caja con el rectángulo de cámara y
+escribe los visibles con un contador atómico; después `glMultiDrawElementsIndirect`
+dibuja solo esos.
+**Por qué no sale a cuenta aquí:**
+- Requiere OpenGL 4.3. Muchos contextos de GD no lo garantizan (ver GpuProbe).
+- La CPU sigue calculando y subiendo las posiciones cada frame (triggers de
+  movimiento): el coste que se quiere evitar no desaparece.
+- El culling de GD ya es por secciones y solo toca lo cercano a la cámara; el
+  trabajo ahorrado es pequeño.
+- Si la lógica necesita el resultado, hay que leerlo de vuelta de la GPU
+  (sincronización que bloquea la CPU o añade un frame de latencia).
+- Los objetos no viven en memoria de GPU: habría que reconstruir el renderizado
+  entero para que el culling GPU tenga sentido.
+**Conclusión:** en un juego con miles (no millones) de objetos, es muy probable
+que sea más lento que el culling por CPU actual.
 
-### TextureTrim (experimental, apagado por defecto)
-`removeUnusedTextures` libera solo texturas cuya única referencia es la caché.
-Se recargan solas al necesitarlas, por lo que el aspecto no cambia.
+## 2. Instancing avanzado
+**Diseño teórico:** un buffer de instancias (transformación, color, UV) y un
+`glDrawElementsInstanced` por tipo de geometría.
+**Por qué no reduce lo que parece:** GD ya dibuja cada batch con una sola
+llamada; los draw calls son decenas, no miles. El instancing reduce datos de
+vértices, no draw calls adicionales. Además GD separa batches por capa z y modo
+de mezcla porque el orden de dibujado y el glow dependen de ello: fusionarlos
+cambia el aspecto, que es justo lo que no se puede tocar. Los cuellos de botella
+típicos son la CPU (transformaciones, visit) y el relleno de píxeles (overdraw
+de glow), no el número de draw calls.
 
-### FrameProfiler
-Hook de `CCDirector::drawScene` (mide el tiempo de frame, incluye la espera de
-vsync) y de `CCSpriteBatchNode::draw` (cuenta batches y quads). Con el
-profiler apagado cada hook cuesta una comparación. Sirve para ver cuántos
-draw calls y quads se envían realmente y detectar el peor frame.
+## 3. Hooks de bajo nivel en el pipeline de Cocos2d
+Los hot paths (`CCNode::visit`, `CCSprite::updateTransform`) se ejecutan decenas
+de miles de veces por frame. Un hook añade una redirección (trampolín) a cada
+llamada; ese coste suele superar lo que se ahorra salvo que el hook elimine
+trabajo grande. Por eso este mod solo hookea puntos de baja frecuencia
+(`drawScene`, una vez por frame) y solo para medir. Cualquier hook más invasivo
+debe justificarse con datos del profiler.
 
-## Lo que NO está implementado, y por qué
+## 4. Memory pooling y cero asignaciones
+GD es C++ con conteo de referencias, no tiene recolector de basura: no existen
+pausas de GC. Los microcongelamientos vienen de carga de texturas, guardado a
+disco, audio y picos de lógica. Un pool propio no puede sustituir las
+asignaciones del juego sin reemplazar el asignador global (`new/delete`,
+`malloc/free`), algo inseguro desde un mod porque el juego libera objetos con
+su propio runtime. Dentro de este mod no hay asignaciones por frame (los
+contadores del profiler son enteros estáticos).
 
-### Batching avanzado de sprites
-GD ya agrupa los objetos en `CCSpriteBatchNode` (un draw call por batch, no por
-objeto). Lo que queda es: batches separados por capa z y modo de mezcla
-(necesarios para que el orden de dibujado y el glow salgan idénticos), y el
-coste en CPU de actualizar el transform de cada sprite. Fusionar batches entre
-capas obliga a reordenar quads, y eso puede cambiar el orden de mezcla, es
-decir, el aspecto. Un renderer propio (el enfoque de Bismuth) es un proyecto
-grande con riesgo visual. El profiler te dice cuántos batches y quads hay
-antes de decidir si merece la pena.
+## 5. Scheduling de nodos decorativos
+Saltarse o espaciar la actualización de decoraciones animadas cambia su estado
+al reaparecer en pantalla (fase de la animación, partículas), es decir, su
+aspecto. Solo sería invisible si la animación se pudiera reconstruir de forma
+analítica a partir del tiempo, algo que no ocurre con acciones y partículas del
+motor.
 
-### Culling de geometría
-GD ya oculta objetos fuera de cámara por secciones
-(`PlayLayer::updateVisibility`). Lo que sigue activo fuera de pantalla es
-lógica de juego (triggers, movimiento, colisiones); saltársela cambia el estado
-del nivel. Añadir un culling propio en `CCNode::visit` costaría más por nodo
-(se ejecuta miles de veces por frame) de lo que ahorra.
+## 6. Ajustes en el juego
+Implementado: Geode genera la interfaz desde `mod.json`; cada módulo tiene su
+interruptor independiente.
 
-### "Ganancia masiva de FPS"
-Con hooks sobre el motor y sin tocar la estética, las ganancias realistas son
-moderadas y concentradas en pausa/menús y en recursos. Ganancias grandes dentro
-del nivel requieren reescribir el renderer.
+## Qué sí se hace, y la hoja de ruta
+1. **Hecho:** límite de FPS fuera de la partida, profiler (FPS, batches, quads,
+   peor frame) y GpuProbe (capacidades de la GPU).
+2. **Siguiente paso:** medir niveles pesados. Si el frame medio es alto con la
+   GPU poco cargada, el cuello es CPU; si sube con el tamaño de pantalla o el
+   glow, es la GPU.
+3. **Con datos:** optimizaciones puntuales y seguras sobre el cuello real.
+4. **Solo si hace falta:** un renderer propio es un proyecto aparte (semanas de
+   trabajo), con riesgos: orden de mezcla idéntico, compatibilidad con otros
+   mods, drivers y software de captura (OBS).
 
 ## Demonlist
-No puedo garantizar que la Demonlist lo acepte: lo decide su staff y sus reglas
-cambian. Lo que sí hago es mantener el mod lejos de cualquier cosa que suelen
-vigilar: no toca física, triggers, input, aleatoriedad ni lo que se muestra
-(no oculta objetos, no quita efectos, no cambia FPS dentro del nivel). Antes de
-usarlo en un récord, pregunta al staff de la lista o revisa sus reglas actuales
-sobre mods.
+No puedo garantizar su aprobación: lo decide el staff y sus reglas cambian. Un
+renderer propio sería lo más probable de llamar su atención. Antes de usar
+cualquier mod en un récord, consulta al staff.

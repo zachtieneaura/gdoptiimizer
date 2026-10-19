@@ -1,3 +1,7 @@
+# v2.1.0
+- Nuevo módulo GpuProbe: informa en el log de las capacidades reales de la GPU (solo lee).
+- Documentación técnica ampliada sobre culling por GPU, instancing, pooling y scheduling.
+
 # v2.0.0
 - Arquitectura modular (núcleo + módulos con interruptor propio).
 - Nuevo profiler de render (solo mide).

@@ -18,6 +18,7 @@ static void registerAllModules() {
     reg.add(opt::makeFpsLimiter());
     reg.add(opt::makeTextureTrim());
     reg.add(opt::makeFrameProfiler());
+    reg.add(opt::makeGpuProbe());
 }
 
 class OptCore : public CCObject {
