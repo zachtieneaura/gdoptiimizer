@@ -22,7 +22,7 @@ jobs:
       with:
         combine: true
         sdk: latest
-        bindings-ref: PEGA_AQUI_EL_HASH
+        bindings-ref: 5a28d381873e58bc08b8de3f7d73ec7f9444cd06
         target: ${{ matrix.config.target }}
   package:
     name: Package builds
