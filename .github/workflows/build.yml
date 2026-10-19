@@ -1,5 +1,5 @@
 name: Build Mod
-configure-args
+
 on:
   workflow_dispatch:
   push:
@@ -21,8 +21,8 @@ jobs:
       uses: geode-sdk/build-geode-mod@main
       with:
         combine: true
-        sdk: latest
-        bindings-ref: 5a28d381873e58bc08b8de3f7d73ec7f9444cd06
+        sdk: nightly
+        configure-args: -DSKIP_BUILDING_CODEGEN=OFF
         target: ${{ matrix.config.target }}
   package:
     name: Package builds
