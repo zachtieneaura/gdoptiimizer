@@ -1,5 +1,5 @@
 name: Build Mod
-
+configure-args
 on:
   workflow_dispatch:
   push:
