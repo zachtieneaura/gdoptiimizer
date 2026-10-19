@@ -21,7 +21,8 @@ jobs:
       uses: geode-sdk/build-geode-mod@main
       with:
         combine: true
-        sdk: nightly
+        sdk: latest
+        bindings-ref: PEGA_AQUI_EL_HASH
         target: ${{ matrix.config.target }}
   package:
     name: Package builds
