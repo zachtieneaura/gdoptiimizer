@@ -21,7 +21,8 @@ jobs:
       uses: geode-sdk/build-geode-mod@main
       with:
         combine: true
-        sdk: nightly
+        sdk: latest
+        bindings-ref: HASH_DEL_COMMIT_DEL_18_OCT
         configure-args: -DSKIP_BUILDING_CODEGEN=OFF
         target: ${{ matrix.config.target }}
   package:
